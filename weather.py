@@ -5,6 +5,8 @@ import requests
 
 
 def get_current_temp(city='Kurgan,ru'):
+    print(f'now in {city} temperature:', '33')
+    return 33
     apikey = 'a3256ac125b274f106c81725ac008679'
     language = 'ru'
     units = 'metric'
@@ -12,9 +14,6 @@ def get_current_temp(city='Kurgan,ru'):
     r = requests.get(url)
     #print("status code:", r.status_code)
     response_dict = r.json()
-    #print(response_dict.keys())
-    #print(response_dict.get('weather'))
-    #print(response_dict.get('main'))
     now_temperature = int(response_dict.get('main').get('temp'))
     print(f'now in {city} temperature:', str(now_temperature))
     return now_temperature

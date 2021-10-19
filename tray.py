@@ -5,6 +5,13 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal
 import time
 import weather
 
+# for getting screen-size
+import ctypes
+
+user32 = ctypes.windll.user32
+screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+print(screensize)
+
 
 class Worker(QObject):
     finished = pyqtSignal()
@@ -14,7 +21,7 @@ class Worker(QObject):
         while True:
             self.temp.emit(weather.get_current_temp())
             self.finished.emit()
-            time.sleep(30)
+            time.sleep(3)
 
 
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
@@ -38,7 +45,6 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         print('settings')
         self.next = Settings()
 
-
     def update(self):
         self.thread = QThread()
         self.worker = Worker()
@@ -55,11 +61,46 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         super(SystemTrayIcon, self).setIcon(icon)
         self.setToolTip(f'Now is {temp}')
 
+
 class Settings(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("qdialog")
+        self.setWindowTitle("Weather Desktop Tray - Settings")
+        self.width = 400
+        self.height = 400
+        self.setGeometry(screensize[0]-self.width-20, screensize[1]-self.height-20, self.width, self.height)
+
+        layout = QtWidgets.QHBoxLayout()
+        window = QtWidgets.QWidget()
+        self.setLayout(layout)
+        self.radio_group = QtWidgets.QButtonGroup(self)
+        self.radio_city = QtWidgets.QRadioButton("City name, Country short-name")
+        self.radio_position = QtWidgets.QRadioButton("Latitude , Longitude")
+        self.radio_group.addButton(self.radio_city)
+        self.radio_group.addButton(self.radio_position)
+        layout.addWidget(self.radio_city)
+        layout.addWidget(self.radio_position)
+        window.setLayout(layout)
+        self.setCentralWidget(window)
+
+        self.edit_city = QtWidgets.QLineEdit(self)
+        #self.edit_city.move(20, 20)
+        #self.edit_city.resize(280, 40)
+
+        self.button_ok = QtWidgets.QPushButton("OK", self)
+        self.button_ok.move(self.width-150, self.height-100)
+        self.button_ok.clicked.connect(self.ok)
+        self.button_cancel = QtWidgets.QPushButton("Cancel", self)
+        self.button_cancel.move(50, self.height - 100)
+        self.button_cancel.clicked.connect(self.cancel)
         self.show()
+
+    def ok(self):
+        print('ok')
+
+    def cancel(self):
+        print('cancel')
+
 
 app = QtWidgets.QApplication(sys.argv)
 w = QtWidgets.QWidget()
