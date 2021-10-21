@@ -18,7 +18,7 @@ period = int(settings.read_config('settings.ini', 'period'))
 
 
 class Worker(QObject):
-    finished = pyqtSignal()
+    finished = pyqtSignal(int)
     temp = pyqtSignal(int)
 
     def __init__(self, city, period):
@@ -27,10 +27,10 @@ class Worker(QObject):
         self.period = period
 
     def run(self):
-        while True:
+        while self.finished != 1:
             self.temp.emit(weather.get_current_temp(self.city))
-            self.finished.emit()
-            time.sleep(self.period)
+            self.finished.emit(1)
+            #time.sleep(self.period)
 
 
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
@@ -40,10 +40,12 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         menu = QtWidgets.QMenu(parent)
         menu.setTitle('qwerty')
         settingsAction = menu.addAction('Settings')
+        changeSettingsAction = menu.addAction('Change settings')
         exitAction = menu.addAction('Exit')
         #updateWeather = menu.addAction('Update')
         exitAction.triggered.connect(self.exit)
         settingsAction.triggered.connect(self.settings)
+        changeSettingsAction.triggered.connect(self.change_setting)
         self.setContextMenu(menu)
         self.update(city, period)
 
@@ -55,8 +57,9 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.next = Settings()
 
     def change_setting(self):
-        self.thread.quit()
-        self.update(city, period)
+        #self.thread.quit()
+        #self.update(city, period)
+        print('change_setting')
 
     def update(self, city, period):
         self.thread = QThread()
