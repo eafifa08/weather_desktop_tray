@@ -2,11 +2,15 @@
 weather app for desktop by Sergey Meshkov
 """
 import requests
+import random
 
 
 def get_current_temp(city='Kurgan,ru'):
-    print(f'now in {city} temperature:', '33')
-    return 33
+    random_temp = random.randrange(-30, 30, 1)
+    print(f'now in {city} temperature:', {random_temp})
+    return random_temp
+    #print(f'now in {city} temperature:', '33')
+    #return 33
     apikey = 'a3256ac125b274f106c81725ac008679'
     language = 'ru'
     units = 'metric'

@@ -4,6 +4,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 import time
 import weather
+import settings
 
 # for getting screen-size
 import ctypes
@@ -12,16 +13,24 @@ user32 = ctypes.windll.user32
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 print(screensize)
 
+city = settings.read_config('settings.ini', 'city')
+period = int(settings.read_config('settings.ini', 'period'))
+
 
 class Worker(QObject):
     finished = pyqtSignal()
     temp = pyqtSignal(int)
 
+    def __init__(self, city, period):
+        super(Worker, self).__init__()
+        self.city = city
+        self.period = period
+
     def run(self):
         while True:
-            self.temp.emit(weather.get_current_temp())
+            self.temp.emit(weather.get_current_temp(self.city))
             self.finished.emit()
-            time.sleep(3)
+            time.sleep(self.period)
 
 
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
@@ -36,7 +45,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         exitAction.triggered.connect(self.exit)
         settingsAction.triggered.connect(self.settings)
         self.setContextMenu(menu)
-        self.update()
+        self.update(city, period)
 
     def exit(self):
         sys.exit()
@@ -45,9 +54,13 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         print('settings')
         self.next = Settings()
 
-    def update(self):
+    def change_setting(self):
+        self.thread.quit()
+        self.update(city, period)
+
+    def update(self, city, period):
         self.thread = QThread()
-        self.worker = Worker()
+        self.worker = Worker(city, period)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
