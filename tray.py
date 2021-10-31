@@ -28,13 +28,13 @@ class Main(QObject):
         self.worker = Worker(city, period)
         self.worker_thread = QThread()
         self.worker.moveToThread(self.worker_thread)
-        self.worker_thread.started.connect(self.worker.run)
-        self.worker.temp.connect(self.gui.setIcon)
         self.worker_thread.start()
+        #self.worker_thread.started.connect(self.worker.run)
+        self.gui.startAction.triggered.connect(self.worker.run)
 
     def _connectSignals(self):
-        self.gui.stopAction.triggered.connect(self.forceWorkerQuit)
-        self.gui.stopAction.triggered.connect(lambda: self.worker.stop())
+        #self.gui.stopAction.triggered.connect(self.forceWorkerQuit)
+        self.gui.stopAction.triggered.connect(self.forceWorkerReset)
         self.temp.connect(self.gui.setIcon)
         self.parent().aboutToQuit.connect(self.forceWorkerQuit)
 
@@ -44,6 +44,7 @@ class Main(QObject):
             self.worker_thread.terminate()
             print('Waiting for thread termination.')
             self.worker_thread.wait()
+            self.signalStatus.emit('Reset')
             #self.temp.emit('Idle.')
             #print('building new working object.')
             self.createWorkerThread()
@@ -61,23 +62,16 @@ class Worker(QObject):
     def __init__(self, city, period, parent=None):
         super(self.__class__, self).__init__(parent)
         self.city = city
-        self._isRunning = True
         self.period = period
 
     @pyqtSlot()
     def run(self):
-        while self._isRunning:
+        while True:
             self.temp.emit(weather.get_current_temp(self.city))
             #self.finished.emit(1)
             #self.my_continue = False
+            print('sleep')
             time.sleep(self.period)
-
-    def stop(self):
-        self._isRunning = False
-        #self.finished.emit()
-
-    def start(self):
-        self._isRunning = True
 
     def change_settings(self, city, period):
         self.city = city
@@ -85,15 +79,12 @@ class Worker(QObject):
 
 
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
-
     def __init__(self, icon, parent=None):
         QtWidgets.QSystemTrayIcon.__init__(self, icon, parent)
         user32 = ctypes.windll.user32
         self.screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
         print(self.screensize)
 
-        #self.city = city
-        #self.period = period
         self.setToolTip("Now")
         self.menu = QtWidgets.QMenu(parent)
         self.menu.setTitle('qwerty')
@@ -102,7 +93,6 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.stopAction = self.menu.addAction('Stop')
         self.startAction = self.menu.addAction('Start')
         self.exitAction = self.menu.addAction('Exit')
-        #updateWeather = menu.addAction('Update')
 
         self.exitAction.triggered.connect(self.exit)
         self.settingsAction.triggered.connect(self.settings)
@@ -110,16 +100,13 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.startAction.triggered.connect(self.start)
         self.stopAction.triggered.connect(self.stop)
         self.setContextMenu(self.menu)
-        #self.createWorkerThread(self.city, self.period)
-        #self.update(self.city, self.period)
-        #self.update2(self.city, self.period)
 
     def exit(self):
         sys.exit()
 
     def settings(self):
         print('settings')
-        self.next = Settings(screensize=self.screensize)
+        #self.settings = Settings(screensize=self.screensize)
 
     def finished(self):
         print('finished')
@@ -135,6 +122,12 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def stop(self):
         print('stop')
 
+    @pyqtSlot(int)
+    def setIcon(self, temp):
+        icon = QtGui.QIcon(f"resources\\{temp}.bmp")
+        super(SystemTrayIcon, self).setIcon(icon)
+        self.setToolTip(f'Now is {temp}')
+'''
     def update(self, city, period):
         self.thread = QThread()
         self.worker = Worker(city, period)
@@ -148,12 +141,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.stopAction.triggered.connect(lambda: self.worker.stop())
         self.startAction.triggered.connect(lambda: self.worker.start())
         self.thread.start()
-
-    @pyqtSlot(int)
-    def setIcon(self, temp):
-        icon = QtGui.QIcon(f"resources\\{temp}.bmp")
-        super(SystemTrayIcon, self).setIcon(icon)
-        self.setToolTip(f'Now is {temp}')
+'''
 
 
 class Settings(QtWidgets.QMainWindow):
@@ -194,6 +182,7 @@ class Settings(QtWidgets.QMainWindow):
 
     def cancel(self):
         print('cancel')
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

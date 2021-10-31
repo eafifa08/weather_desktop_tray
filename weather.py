@@ -6,7 +6,10 @@ import random
 
 
 def get_current_temp(city='Kurgan,ru'):
-    random_temp = random.randrange(-30, 30, 1)
+    if city == 'Kurgan,ru':
+        random_temp = random.randrange(-10, 10, 1)
+    if city == 'Sochi,ru':
+        random_temp = random.randrange(20, 40, 1)
     print(f'now in {city} temperature:', {random_temp})
     return random_temp
     #print(f'now in {city} temperature:', '33')

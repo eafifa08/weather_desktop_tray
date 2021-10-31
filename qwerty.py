@@ -2,8 +2,8 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import random
 
-class Example(QtCore.QObject):
 
+class Example(QtCore.QObject):
     signalStatus = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
@@ -17,28 +17,22 @@ class Example(QtCore.QObject):
 
         # Make any cross object connections.
         self._connectSignals()
-
         self.gui.show()
-
 
     def _connectSignals(self):
         self.gui.button_cancel.clicked.connect(self.forceWorkerReset)
         self.signalStatus.connect(self.gui.updateStatus)
         self.parent().aboutToQuit.connect(self.forceWorkerQuit)
 
-
     def createWorkerThread(self):
-
         # Setup the worker object and the worker_thread.
         self.worker = WorkerObject()
         self.worker_thread = QtCore.QThread()
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.start()
-
         # Connect any worker signals
         self.worker.signalStatus.connect(self.gui.updateStatus)
         self.gui.button_start.clicked.connect(self.worker.startWork)
-
 
     def forceWorkerReset(self):
         if self.worker_thread.isRunning():
@@ -53,7 +47,6 @@ class Example(QtCore.QObject):
             print('building new working object.')
             self.createWorkerThread()
 
-
     def forceWorkerQuit(self):
         if self.worker_thread.isRunning():
             self.worker_thread.terminate()
@@ -61,7 +54,6 @@ class Example(QtCore.QObject):
 
 
 class WorkerObject(QtCore.QObject):
-
     signalStatus = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
@@ -69,7 +61,7 @@ class WorkerObject(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def startWork(self):
-        for ii in range(7):
+        for ii in range(10):
             number = random.randint(0,5000**ii)
             self.signalStatus.emit('Iteration: {}, Factoring: {}'.format(ii, number))
             factors = self.primeFactors(number)
@@ -91,7 +83,6 @@ class WorkerObject(QtCore.QObject):
 
 
 class Window(QtWidgets.QWidget):
-
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
         self.button_start = QtWidgets.QPushButton('Start', self)
