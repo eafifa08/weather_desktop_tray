@@ -1,3 +1,4 @@
+"""Settings"""
 import configparser
 import os
 

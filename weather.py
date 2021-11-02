@@ -1,6 +1,4 @@
-"""
-weather app for desktop by Sergey Meshkov
-"""
+"""Get now-weather in city from openweathermap.org"""
 import requests
 import random
 

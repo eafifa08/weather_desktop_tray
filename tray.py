@@ -1,3 +1,6 @@
+"""
+weather app for desktop by Sergey Meshkov
+"""
 import sys
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
@@ -5,7 +8,6 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal, QRunnable, QThreadPool, p
 import time
 import weather
 import settings
-# for getting screen-size
 import ctypes
 
 
