@@ -17,22 +17,27 @@ class Main(QObject):
 
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
-        self.city = settings.read_config('settings.ini', 'city')
-        self.period = int(settings.read_config('settings.ini', 'period'))
+        self.update_settings()
         self.w = QtWidgets.QWidget()
         self.gui = SystemTrayIcon(QtGui.QIcon("resources\\thermometer.png"), self.w)
-        self.createWorkerThread(self.city, self.period)
+        self.createWorkerThread()
         self._connectSignals()
         self.gui.show()
+        self.gui.startAction.toggle()
 
-    def createWorkerThread(self, city, period):
+    def update_settings(self):
+        self.city = settings.read_config('settings.ini', 'city')
+        self.period = int(settings.read_config('settings.ini', 'period'))
+
+    def createWorkerThread(self):
         # Setup the worker object and the worker_thread.
-        self.worker = Worker(city, period)
+        self.worker = Worker(self.city, self.period)
         self.worker_thread = QThread()
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.start()
         #self.worker_thread.started.connect(self.worker.run)
-        self.gui.startAction.triggered.connect(self.worker.run)
+        self.worker.temp.connect(self.gui.setIcon)
+        self.gui.startAction.triggered.connect(self.worker.startWork)
 
     def _connectSignals(self):
         #self.gui.stopAction.triggered.connect(self.forceWorkerQuit)
@@ -46,9 +51,9 @@ class Main(QObject):
             self.worker_thread.terminate()
             print('Waiting for thread termination.')
             self.worker_thread.wait()
-            self.signalStatus.emit('Reset')
             #self.temp.emit('Idle.')
-            #print('building new working object.')
+            print('building new working object.')
+            self.update_settings()
             self.createWorkerThread()
 
     def forceWorkerQuit(self):
@@ -67,7 +72,7 @@ class Worker(QObject):
         self.period = period
 
     @pyqtSlot()
-    def run(self):
+    def startWork(self):
         while True:
             self.temp.emit(weather.get_current_temp(self.city))
             #self.finished.emit(1)
@@ -103,12 +108,16 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.stopAction.triggered.connect(self.stop)
         self.setContextMenu(self.menu)
 
+    def show(self):
+        QtWidgets.QSystemTrayIcon.show(self)
+        self.startAction.trigger()
+
     def exit(self):
         sys.exit()
 
     def settings(self):
         print('settings')
-        #self.settings = Settings(screensize=self.screensize)
+        self.settings = Settings(screensize=self.screensize)
 
     def finished(self):
         print('finished')
@@ -178,8 +187,11 @@ class Settings(QtWidgets.QMainWindow):
         self.edit_city.setText(text)
 
     def save(self):
+        self.city = settings.read_config('settings.ini', 'city')
+        self.period = int(settings.read_config('settings.ini', 'period'))
         global city
         city = self.edit_city.text()
+        settings.write_config('settings.ini', 'city', city)
         print('save')
 
     def cancel(self):
