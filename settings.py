@@ -6,6 +6,7 @@ import os
 def create_config(path):
     config = configparser.ConfigParser()
     config.add_section('Settings')
+    config.set('Settings', 'cities', 'Kurgan,ru;Moscow,ru;Sochi,ru;Chicago,us;London,uk')
     config.set('Settings', 'city', 'Kurgan,ru')
     config.set('Settings', 'period', '3')
     with open(path, 'w') as config_file:

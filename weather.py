@@ -1,9 +1,12 @@
 """Get now-weather in city from openweathermap.org"""
 import requests
 import random
+import datetime
 
 
 def get_current_temp(city='Kurgan,ru'):
+    time = datetime.datetime.now()
+    str_time = time.strftime("")
     if city == 'Kurgan,ru':
         random_temp = random.randrange(-10, 10, 1)
     elif city == 'Sochi,ru':

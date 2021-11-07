@@ -12,7 +12,6 @@ import ctypes
 
 
 class Main(QObject):
-
     temp = pyqtSignal(int)
 
     def __init__(self, parent=None):
@@ -28,6 +27,7 @@ class Main(QObject):
     def update_settings(self):
         self.city = settings.read_config('settings.ini', 'city')
         self.period = int(settings.read_config('settings.ini', 'period'))
+        self.cities = set(settings.read_config('settings.ini', 'cities').split(';'))
 
     def createWorkerThread(self):
         # Setup the worker object and the worker_thread.
@@ -81,8 +81,7 @@ class Worker(QObject):
             time.sleep(self.period)
 
     def change_settings(self, city, period):
-        self.city = city
-        self.period = period
+        pass
 
 
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
@@ -162,17 +161,14 @@ class Settings(QtWidgets.QMainWindow):
         self.width = 400
         self.height = 400
         self.setGeometry(screensize[0]-self.width-20, screensize[1]-self.height-20, self.width, self.height)
-
         self.edit_city = QtWidgets.QLineEdit(self)
-        self.edit_city.setText('Moscow, ru')
         self.listCities = QtWidgets.QListWidget(self)
         self.listCities.resize(100, 200)
-        self.listCities.insertItem(0, 'Chicago, us')
-        self.listCities.insertItem(1, 'Paris, fr')
+        self.fillCities()
+        self.fillCity()
         self.listCities.clicked.connect(self.click_list_cities)
         self.edit_city.move(150, 20)
         self.edit_city.resize(280, 40)
-
         self.button_save = QtWidgets.QPushButton("Save", self)
         self.button_save.move(self.width-150, self.height-100)
         self.button_save.clicked.connect(self.save)
@@ -180,6 +176,14 @@ class Settings(QtWidgets.QMainWindow):
         self.button_cancel.move(50, self.height - 100)
         self.button_cancel.clicked.connect(self.cancel)
         self.show()
+
+    def fillCities(self):
+        cities = settings.read_config('settings.ini', 'cities').split(';')
+        for city in cities:
+            self.listCities.addItem(city)
+
+    def fillCity(self):
+        self.edit_city.setText(settings.read_config('settings.ini', 'city'))
 
     def click_list_cities(self, index):
         item = self.listCities.currentItem()
@@ -195,10 +199,12 @@ class Settings(QtWidgets.QMainWindow):
         print('save')
 
     def cancel(self):
-        print('cancel')
+        self.close()
+
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
     main = Main(app)
     sys.exit(app.exec_())
