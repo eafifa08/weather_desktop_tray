@@ -4,38 +4,36 @@ import random
 import datetime
 
 
-def get_current_temp(city='Kurgan,ru'):
+def get_current_temp(apikey, city='Kurgan,ru'):
     time = datetime.datetime.now()
-    str_time = time.strftime("")
+    str_time = time.strftime("%Y-%m-%d, %H:%M:%S")
+    print(str_time)
+
     if city == 'Kurgan,ru':
         random_temp = random.randrange(-10, 10, 1)
     elif city == 'Sochi,ru':
         random_temp = random.randrange(20, 40, 1)
     else:
         random_temp = 0
-    print(f'now in {city} temperature:', {random_temp})
+    print(f'now in {city} temperature:', random_temp)
+    return {'temp': random_temp, 'time': str_time}
 
-
-    return random_temp
-    #print(f'now in {city} temperature:', '33')
-    #return 33
-    apikey = 'a3256ac125b274f106c81725ac008679'
     language = 'ru'
     units = 'metric'
     url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={apikey}&lang={language}&units={units}'
     r = requests.get(url)
-    #print("status code:", r.status_code)
     response_dict = r.json()
     now_temperature = int(response_dict.get('main').get('temp'))
     print(f'now in {city} temperature:', str(now_temperature))
-    return now_temperature
+    return {'temp': now_temperature, 'time': str_time}
 
 
 def main():
-    get_current_temp(city='Moscow,ru')
-    get_current_temp(city='Anadyr,ru')
-    get_current_temp(city='North Slope Borough,us')
-    get_current_temp(city='Chicago,us')
+    apikey = 'a3256ac125b274f106c81725ac008679'
+    get_current_temp(apikey, city='Kurgan,ru')
+    get_current_temp(apikey, city='Sochi,ru')
+    get_current_temp(apikey, city='North Slope Borough,us')
+    get_current_temp(apikey, city='Chicago,us')
 
 
 if __name__ == '__main__':
