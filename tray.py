@@ -95,14 +95,12 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.menu = QtWidgets.QMenu(parent)
         self.menu.setTitle('qwerty')
         self.settingsAction = self.menu.addAction('Settings')
-        self.changeSettingsAction = self.menu.addAction('Change settings')
         self.stopAction = self.menu.addAction('Stop')
         self.startAction = self.menu.addAction('Start')
         self.exitAction = self.menu.addAction('Exit')
 
         self.exitAction.triggered.connect(self.exit)
         self.settingsAction.triggered.connect(self.settings)
-        self.changeSettingsAction.triggered.connect(self.change_setting)
         self.startAction.triggered.connect(self.start)
         self.stopAction.triggered.connect(self.stop)
         self.setContextMenu(self.menu)
@@ -120,10 +118,6 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
     def finished(self):
         print('finished')
-
-    def change_setting(self):
-        print('change_setting')
-        #self.changeSettingsAction.triggered.connect(lambda: self.worker.change_settings(self.city, self.period))
 
     def start(self):
         print('start')
@@ -158,23 +152,33 @@ class Settings(QtWidgets.QMainWindow):
     def __init__(self, screensize):
         super().__init__()
         self.setWindowTitle("Weather Desktop Tray - Settings")
-        self.width = 400
-        self.height = 400
-        self.setGeometry(screensize[0]-self.width-20, screensize[1]-self.height-20, self.width, self.height)
+        self.grid = QtWidgets.QGridLayout()
+        self.grid.setSpacing(10)
+
         self.edit_city = QtWidgets.QLineEdit(self)
+        self.edit_apikey = QtWidgets.QLineEdit(self)
         self.listCities = QtWidgets.QListWidget(self)
-        self.listCities.resize(100, 200)
+        #self.listCities.resize(100, 200)
         self.fillCities()
         self.fillCity()
         self.listCities.clicked.connect(self.click_list_cities)
-        self.edit_city.move(150, 20)
-        self.edit_city.resize(280, 40)
+        #self.edit_city.move(150, 20)
+        #self.edit_city.resize(150, 40)
+        #self.edit_apikey.move(150, 220)
+        #self.edit_apikey.resize(150, 40)
         self.button_save = QtWidgets.QPushButton("Save", self)
-        self.button_save.move(self.width-150, self.height-100)
+        #self.button_save.move(self.width-150, self.height-100)
         self.button_save.clicked.connect(self.save)
         self.button_cancel = QtWidgets.QPushButton("Cancel", self)
-        self.button_cancel.move(50, self.height - 100)
+        #self.button_cancel.move(50, self.height - 100)
         self.button_cancel.clicked.connect(self.cancel)
+
+        self.grid.addWidget(self.edit_city, 1, 1)
+        self.setLayout(self.grid)
+
+        self.width = 400
+        self.height = 400
+        self.setGeometry(screensize[0] - self.width - 20, screensize[1] - self.height - 20, self.width, self.height)
         self.show()
 
     def fillCities(self):

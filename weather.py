@@ -16,7 +16,7 @@ def get_current_temp(apikey, city='Kurgan,ru'):
     else:
         random_temp = 0
     print(f'now in {city} temperature:', random_temp)
-    return {'temp': random_temp, 'time': str_time}
+    return random_temp
 
     language = 'ru'
     units = 'metric'
@@ -25,7 +25,7 @@ def get_current_temp(apikey, city='Kurgan,ru'):
     response_dict = r.json()
     now_temperature = int(response_dict.get('main').get('temp'))
     print(f'now in {city} temperature:', str(now_temperature))
-    return {'temp': now_temperature, 'time': str_time}
+    return now_temperature
 
 
 def main():
