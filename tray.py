@@ -148,37 +148,37 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 '''
 
 
-class Settings(QtWidgets.QMainWindow):
+class Settings(QtWidgets.QWidget):
     def __init__(self, screensize):
         super().__init__()
         self.setWindowTitle("Weather Desktop Tray - Settings")
         self.grid = QtWidgets.QGridLayout()
         self.grid.setSpacing(10)
-
         self.edit_city = QtWidgets.QLineEdit(self)
+        self.label_city = QtWidgets.QLabel("Current city", self)
         self.edit_apikey = QtWidgets.QLineEdit(self)
+        self.label_apikey = QtWidgets.QLabel("Your api-key", self)
         self.listCities = QtWidgets.QListWidget(self)
-        #self.listCities.resize(100, 200)
         self.fillCities()
         self.fillCity()
         self.listCities.clicked.connect(self.click_list_cities)
-        #self.edit_city.move(150, 20)
-        #self.edit_city.resize(150, 40)
-        #self.edit_apikey.move(150, 220)
-        #self.edit_apikey.resize(150, 40)
         self.button_save = QtWidgets.QPushButton("Save", self)
-        #self.button_save.move(self.width-150, self.height-100)
         self.button_save.clicked.connect(self.save)
         self.button_cancel = QtWidgets.QPushButton("Cancel", self)
-        #self.button_cancel.move(50, self.height - 100)
         self.button_cancel.clicked.connect(self.cancel)
-
+        self.grid.addWidget(self.listCities, 0, 0, 1, 2)
+        self.grid.addWidget(self.label_city, 1, 0)
         self.grid.addWidget(self.edit_city, 1, 1)
+        self.grid.addWidget(self.label_apikey, 2, 0)
+        self.grid.addWidget(self.edit_apikey, 2, 1)
+        self.grid.addWidget(self.button_save, 3, 0)
+        self.grid.addWidget(self.button_cancel, 3, 1)
         self.setLayout(self.grid)
 
         self.width = 400
         self.height = 400
         self.setGeometry(screensize[0] - self.width - 20, screensize[1] - self.height - 20, self.width, self.height)
+
         self.show()
 
     def fillCities(self):
