@@ -154,25 +154,36 @@ class Settings(QtWidgets.QWidget):
         self.setWindowTitle("Weather Desktop Tray - Settings")
         self.grid = QtWidgets.QGridLayout()
         self.grid.setSpacing(10)
+
         self.edit_city = QtWidgets.QLineEdit(self)
         self.label_city = QtWidgets.QLabel("Current city", self)
+
         self.edit_apikey = QtWidgets.QLineEdit(self)
         self.label_apikey = QtWidgets.QLabel("Your api-key", self)
+
         self.listCities = QtWidgets.QListWidget(self)
-        self.fillCities()
-        self.fillCity()
+
+        self.label_period = QtWidgets.QLabel("Period of update", self)
+        self.onlyInt = QtGui.QIntValidator(1, 9999, self)
+        self.edit_period = QtWidgets.QLineEdit(self)
+        self.edit_period.setValidator(self.onlyInt)
+
+        self.fillSettings()
         self.listCities.clicked.connect(self.click_list_cities)
         self.button_save = QtWidgets.QPushButton("Save", self)
         self.button_save.clicked.connect(self.save)
         self.button_cancel = QtWidgets.QPushButton("Cancel", self)
         self.button_cancel.clicked.connect(self.cancel)
+
         self.grid.addWidget(self.listCities, 0, 0, 1, 2)
         self.grid.addWidget(self.label_city, 1, 0)
         self.grid.addWidget(self.edit_city, 1, 1)
-        self.grid.addWidget(self.label_apikey, 2, 0)
-        self.grid.addWidget(self.edit_apikey, 2, 1)
-        self.grid.addWidget(self.button_save, 3, 0)
-        self.grid.addWidget(self.button_cancel, 3, 1)
+        self.grid.addWidget(self.label_period, 2, 0)
+        self.grid.addWidget(self.edit_period, 2, 1)
+        self.grid.addWidget(self.label_apikey, 3, 0)
+        self.grid.addWidget(self.edit_apikey, 3, 1)
+        self.grid.addWidget(self.button_save, 4, 0)
+        self.grid.addWidget(self.button_cancel, 4, 1)
         self.setLayout(self.grid)
 
         self.width = 400
@@ -181,13 +192,14 @@ class Settings(QtWidgets.QWidget):
 
         self.show()
 
-    def fillCities(self):
+    def fillSettings(self):
         cities = settings.read_config('settings.ini', 'cities').split(';')
-        for city in cities:
-            self.listCities.addItem(city)
-
-    def fillCity(self):
+        self.listCities.clear()
+        for tempCity in cities:
+            self.listCities.addItem(tempCity)
         self.edit_city.setText(settings.read_config('settings.ini', 'city'))
+        self.edit_period.setText(settings.read_config('settings.ini', 'period'))
+        self.edit_apikey.setText(settings.read_config('settings.ini', 'apikey'))
 
     def click_list_cities(self, index):
         item = self.listCities.currentItem()
@@ -195,11 +207,23 @@ class Settings(QtWidgets.QWidget):
         self.edit_city.setText(text)
 
     def save(self):
-        self.city = settings.read_config('settings.ini', 'city')
-        self.period = int(settings.read_config('settings.ini', 'period'))
-        global city
+        #self.city = settings.read_config('settings.ini', 'city')
+        #self.period = int(settings.read_config('settings.ini', 'period'))
+        #global city
         city = self.edit_city.text()
+        period = self.edit_period.text()
+        apikey = self.edit_apikey.text()
+        cities = settings.read_config('settings.ini', 'cities').split(';')
+        cities.append(city)
+        cities = set(cities)
+        cities = list(cities)
+        cities.sort()
+        cities = ";".join(cities)
+        settings.write_config('settings.ini', 'cities', cities)
         settings.write_config('settings.ini', 'city', city)
+        settings.write_config('settings.ini', 'period', period)
+        settings.write_config('settings.ini', 'apikey', apikey)
+        self.fillSettings()
         print('save')
 
     def cancel(self):
