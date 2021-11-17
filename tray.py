@@ -27,11 +27,12 @@ class Main(QObject):
     def update_settings(self):
         self.city = settings.read_config('settings.ini', 'city')
         self.period = int(settings.read_config('settings.ini', 'period'))
+        self.apikey = settings.read_config('settings.ini', 'apikey')
         self.cities = set(settings.read_config('settings.ini', 'cities').split(';'))
 
     def createWorkerThread(self):
         # Setup the worker object and the worker_thread.
-        self.worker = Worker(self.city, self.period)
+        self.worker = Worker(self.city, self.period, self.apikey)
         self.worker_thread = QThread()
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.start()
@@ -42,6 +43,7 @@ class Main(QObject):
     def _connectSignals(self):
         #self.gui.stopAction.triggered.connect(self.forceWorkerQuit)
         self.gui.stopAction.triggered.connect(self.forceWorkerReset)
+        self.gui.settings.button_save.clicked.connect
         self.temp.connect(self.gui.setIcon)
         self.parent().aboutToQuit.connect(self.forceWorkerQuit)
 
@@ -66,18 +68,19 @@ class Worker(QObject):
     #finished = pyqtSignal()
     temp = pyqtSignal(int)
 
-    def __init__(self, city, period, parent=None):
+    def __init__(self, city, period, apikey, parent=None):
         super(self.__class__, self).__init__(parent)
         self.city = city
         self.period = period
+        self.apikey = apikey
 
     @pyqtSlot()
     def startWork(self):
         while True:
-            self.temp.emit(weather.get_current_temp(self.city))
+            self.temp.emit(weather.get_current_temp(self.city, self.apikey))
             #self.finished.emit(1)
             #self.my_continue = False
-            print('sleep')
+            print(f'sleeping {self.period} seconds')
             time.sleep(self.period)
 
     def change_settings(self, city, period):
@@ -128,24 +131,10 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
     @pyqtSlot(int)
     def setIcon(self, temp):
+        city = settings.read_config('settings.ini', 'city')
         icon = QtGui.QIcon(f"resources\\{temp}.bmp")
         super(SystemTrayIcon, self).setIcon(icon)
-        self.setToolTip(f'Now is {temp}')
-'''
-    def update(self, city, period):
-        self.thread = QThread()
-        self.worker = Worker(city, period)
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.temp.connect(self.setIcon)
-        self.worker.finished.connect(self.finished)
-        self.stopAction.triggered.connect(lambda: self.worker.stop())
-        self.startAction.triggered.connect(lambda: self.worker.start())
-        self.thread.start()
-'''
+        self.setToolTip(f'Now in {city} is {temp}')
 
 
 class Settings(QtWidgets.QWidget):
@@ -163,7 +152,7 @@ class Settings(QtWidgets.QWidget):
 
         self.listCities = QtWidgets.QListWidget(self)
 
-        self.label_period = QtWidgets.QLabel("Period of update", self)
+        self.label_period = QtWidgets.QLabel("Period of update(secs)", self)
         self.onlyInt = QtGui.QIntValidator(1, 9999, self)
         self.edit_period = QtWidgets.QLineEdit(self)
         self.edit_period.setValidator(self.onlyInt)

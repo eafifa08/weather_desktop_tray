@@ -4,10 +4,11 @@ import random
 import datetime
 
 
-def get_current_temp(apikey, city='Kurgan,ru'):
+def get_current_temp(city='Kurgan,ru', apikey='NO_API_KEY'):
     time = datetime.datetime.now()
     str_time = time.strftime("%Y-%m-%d, %H:%M:%S")
     print(str_time)
+
 
     if city == 'Kurgan,ru':
         random_temp = random.randrange(-10, 10, 1)
@@ -30,10 +31,10 @@ def get_current_temp(apikey, city='Kurgan,ru'):
 
 def main():
     apikey = 'a3256ac125b274f106c81725ac008679'
-    get_current_temp(apikey, city='Kurgan,ru')
-    get_current_temp(apikey, city='Sochi,ru')
-    get_current_temp(apikey, city='North Slope Borough,us')
-    get_current_temp(apikey, city='Chicago,us')
+    get_current_temp(city='Kurgan,ru', apikey=apikey)
+    get_current_temp(city='Sochi,ru', apikey=apikey)
+    get_current_temp(city='North Slope Borough,us', apikey=apikey)
+    get_current_temp(city='Chicago,us', apikey=apikey)
 
 
 if __name__ == '__main__':
