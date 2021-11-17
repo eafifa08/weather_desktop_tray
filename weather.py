@@ -9,7 +9,7 @@ def get_current_temp(city='Kurgan,ru', apikey='NO_API_KEY'):
     str_time = time.strftime("%Y-%m-%d, %H:%M:%S")
     print(str_time)
 
-
+    """
     if city == 'Kurgan,ru':
         random_temp = random.randrange(-10, 10, 1)
     elif city == 'Sochi,ru':
@@ -18,6 +18,7 @@ def get_current_temp(city='Kurgan,ru', apikey='NO_API_KEY'):
         random_temp = 0
     print(f'now in {city} temperature:', random_temp)
     return random_temp
+    """
 
     language = 'ru'
     units = 'metric'

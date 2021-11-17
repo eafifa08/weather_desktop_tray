@@ -10,7 +10,6 @@ def create_config(path):
     config.set('Settings', 'city', 'Kurgan,ru')
     config.set('Settings', 'period', '900')
     config.set('Settings', 'apikey', 'YOUR_API_KEY')
-    #config.set('Settings', 'apikey', 'a3256ac125b274f106c81725ac008679')
     with open(path, 'w') as config_file:
         config.write(config_file)
 

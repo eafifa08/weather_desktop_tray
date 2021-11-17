@@ -1,6 +1,7 @@
 """
 weather app for desktop by Sergey Meshkov
 """
+import datetime
 import sys
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
@@ -22,7 +23,7 @@ class Main(QObject):
         self.createWorkerThread()
         self._connectSignals()
         self.gui.show()
-        self.gui.startAction.toggle()
+        #self.gui.startAction.toggle()
 
     def update_settings(self):
         self.city = settings.read_config('settings.ini', 'city')
@@ -40,10 +41,13 @@ class Main(QObject):
         self.worker.temp.connect(self.gui.setIcon)
         self.gui.startAction.triggered.connect(self.worker.startWork)
 
+        #self.worker.startWork()
+
     def _connectSignals(self):
         #self.gui.stopAction.triggered.connect(self.forceWorkerQuit)
         self.gui.stopAction.triggered.connect(self.forceWorkerReset)
-        self.gui.settings.button_save.clicked.connect
+        self.gui.settings.button_save.clicked.connect(self.forceWorkerReset)
+
         self.temp.connect(self.gui.setIcon)
         self.parent().aboutToQuit.connect(self.forceWorkerQuit)
 
@@ -57,6 +61,7 @@ class Main(QObject):
             print('building new working object.')
             self.update_settings()
             self.createWorkerThread()
+            self.gui.startAction.trigger()
 
     def forceWorkerQuit(self):
         if self.worker_thread.isRunning():
@@ -76,8 +81,9 @@ class Worker(QObject):
 
     @pyqtSlot()
     def startWork(self):
+        print('Start work Worker')
         while True:
-            self.temp.emit(weather.get_current_temp(self.city, self.apikey))
+            self.temp.emit(weather.get_current_temp(city=self.city, apikey=self.apikey))
             #self.finished.emit(1)
             #self.my_continue = False
             print(f'sleeping {self.period} seconds')
@@ -108,6 +114,8 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.stopAction.triggered.connect(self.stop)
         self.setContextMenu(self.menu)
 
+        self.settings = Settings(screensize=self.screensize)
+
     def show(self):
         QtWidgets.QSystemTrayIcon.show(self)
         self.startAction.trigger()
@@ -117,7 +125,8 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
     def settings(self):
         print('settings')
-        self.settings = Settings(screensize=self.screensize)
+        #self.settings = Settings(screensize=self.screensize)
+        self.settings.show()
 
     def finished(self):
         print('finished')
@@ -132,14 +141,18 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     @pyqtSlot(int)
     def setIcon(self, temp):
         city = settings.read_config('settings.ini', 'city')
+        time_str = datetime.datetime.now().strftime('%H:%M:%S')
         icon = QtGui.QIcon(f"resources\\{temp}.bmp")
         super(SystemTrayIcon, self).setIcon(icon)
-        self.setToolTip(f'Now in {city} is {temp}')
+        self.setToolTip(f'At {time_str} in {city} is {temp} celsius')
 
 
 class Settings(QtWidgets.QWidget):
     def __init__(self, screensize):
         super().__init__()
+
+        self.icon = QtGui.QIcon(f"resources\\settings-svgrepo-com.svg")
+        self.setWindowIcon(self.icon)
         self.setWindowTitle("Weather Desktop Tray - Settings")
         self.grid = QtWidgets.QGridLayout()
         self.grid.setSpacing(10)
@@ -179,7 +192,7 @@ class Settings(QtWidgets.QWidget):
         self.height = 400
         self.setGeometry(screensize[0] - self.width - 20, screensize[1] - self.height - 20, self.width, self.height)
 
-        self.show()
+        #self.show()
 
     def fillSettings(self):
         cities = settings.read_config('settings.ini', 'cities').split(';')
