@@ -5,7 +5,7 @@ import datetime
 import sys
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QRunnable, QThreadPool, pyqtSlot
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 import time
 import weather
 import settings
@@ -23,7 +23,6 @@ class Main(QObject):
         self.createWorkerThread()
         self._connectSignals()
         self.gui.show()
-        #self.gui.startAction.toggle()
 
     def update_settings(self):
         self.city = settings.read_config('settings.ini', 'city')
@@ -37,14 +36,10 @@ class Main(QObject):
         self.worker_thread = QThread()
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.start()
-        #self.worker_thread.started.connect(self.worker.run)
         self.worker.temp.connect(self.gui.setIcon)
         self.gui.startAction.triggered.connect(self.worker.startWork)
 
-        #self.worker.startWork()
-
     def _connectSignals(self):
-        #self.gui.stopAction.triggered.connect(self.forceWorkerQuit)
         self.gui.stopAction.triggered.connect(self.forceWorkerReset)
         self.gui.settings.button_save.clicked.connect(self.forceWorkerReset)
 
@@ -57,7 +52,6 @@ class Main(QObject):
             self.worker_thread.terminate()
             print('Waiting for thread termination.')
             self.worker_thread.wait()
-            #self.temp.emit('Idle.')
             print('building new working object.')
             self.update_settings()
             self.createWorkerThread()
@@ -70,7 +64,6 @@ class Main(QObject):
 
 
 class Worker(QObject):
-    #finished = pyqtSignal()
     temp = pyqtSignal(int)
 
     def __init__(self, city, period, apikey, parent=None):
@@ -84,8 +77,6 @@ class Worker(QObject):
         print('Start work Worker')
         while True:
             self.temp.emit(weather.get_current_temp(city=self.city, apikey=self.apikey))
-            #self.finished.emit(1)
-            #self.my_continue = False
             print(f'sleeping {self.period} seconds')
             time.sleep(self.period)
 
@@ -98,7 +89,6 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         QtWidgets.QSystemTrayIcon.__init__(self, icon, parent)
         user32 = ctypes.windll.user32
         self.screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-        print(self.screensize)
 
         self.setToolTip("Now")
         self.menu = QtWidgets.QMenu(parent)
@@ -190,7 +180,7 @@ class Settings(QtWidgets.QWidget):
 
         self.width = 400
         self.height = 400
-        self.setGeometry(screensize[0] - self.width - 20, screensize[1] - self.height - 20, self.width, self.height)
+        self.setGeometry(screensize[0] - self.width - 30, screensize[1] - self.height - 40, self.width, self.height)
 
         #self.show()
 
